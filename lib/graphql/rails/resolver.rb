@@ -11,18 +11,18 @@ module GraphQL
         end
 
         @callable =
-          if callable.present?
-            callable
-          else
-            Proc.new { |obj|
-              subfield = model.name.underscore.pluralize
-              if obj.respond_to? subfield
-                obj.send(subfield)
-              else
-                model.all
-              end
-            }
-          end
+            if callable.present?
+              callable
+            else
+              Proc.new { |obj|
+                subfield = model.name.underscore.pluralize
+                if obj.respond_to? subfield
+                  obj.send(subfield)
+                else
+                  model.all
+                end
+              }
+            end
 
         @obj = nil
         @args = nil
@@ -39,7 +39,7 @@ module GraphQL
         @result = @callable.call(obj, args, ctx)
 
         # If there's an ID type, offer ID resolution_strategy
-        if has_id_argument? and args.key? @id_field
+        if has_id_argument? && args.key? @id_field
           @result = resolve_id(args[@id_field])
         end
 
@@ -58,10 +58,10 @@ module GraphQL
                 scope_name = scope_name.call(value) if scope_name.respond_to? :call
 
                 scope_args = []
-                scope_args.push(value) if params.key? :with_value and params[:with_value] == true
+                scope_args.push(value) if params.key? :with_value && params[:with_value] == true
 
                 @result = @result.send(scope_name, *scope_args) unless scope_name.nil?
-              # Match custom methods
+                # Match custom methods
               elsif params.key? :method
                 @result = send(params[:method], value)
               elsif method.present?
@@ -84,17 +84,17 @@ module GraphQL
                   value = resolve_id(value)
                 end
 
-                if self.respond_to? arg and params[:where].present? == false
+                if self.respond_to? arg && params[:where].present? == false
                   @result = send(arg, value)
-                elsif @result.respond_to? arg and params[:where].present? == false
+                elsif @result.respond_to? arg && params[:where].present? == false
                   @result = @result.send(arg, value)
                 elsif @result.respond_to? :where
                   attribute =
-                    if params[:where].present?
-                      params[:where]
-                    else
-                      arg
-                    end
+                      if params[:where].present?
+                        params[:where]
+                      else
+                        arg
+                      end
 
                   unless @result.has_attribute?(attribute)
                     raise ArgumentError, "Unable to resolve attribute #{attribute} on #{@result}"
@@ -122,7 +122,7 @@ module GraphQL
 
       def payload
         # Return all results if it's a list or a connection
-        if connection? or list?
+        if connection? || list?
           @result
         else
           @result.first
@@ -136,7 +136,7 @@ module GraphQL
       def has_id_argument?
         @ctx.irep_node.definitions.any? do |type_defn, field_defn|
           if field_defn.name === field_name
-            field_defn.arguments.any? do |k,v|
+            field_defn.arguments.any? do |k, v|
               is_field_id_type?(v.type)
             end
           else
@@ -169,16 +169,17 @@ module GraphQL
 
       def get_arg_type(key)
         args = get_field_args
-        args[key].type
+        args && args[key].type
       end
 
       def is_field_id_type?(field)
-         field == ::GraphQL::ID_TYPE or
-              (field.kind == ::GraphQL::TypeKinds::LIST and field.of_type == ::GraphQL::ID_TYPE)
+        false unless field
+        field == ::GraphQL::ID_TYPE ||
+            (field.kind == ::GraphQL::TypeKinds::LIST && field.of_type == ::GraphQL::ID_TYPE)
       end
 
       def is_arg_id_type?(key)
-         is_field_id_type?(get_arg_type(key))
+        is_field_id_type?(get_arg_type(key))
       end
 
       def model
