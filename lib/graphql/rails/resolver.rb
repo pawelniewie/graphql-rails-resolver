@@ -39,7 +39,7 @@ module GraphQL
         @result = @callable.call(obj, args, ctx)
 
         # If there's an ID type, offer ID resolution_strategy
-        if has_id_argument? && args.key? @id_field
+        if has_id_argument? && args.key?(@id_field)
           @result = resolve_id(args[@id_field])
         end
 
@@ -58,7 +58,7 @@ module GraphQL
                 scope_name = scope_name.call(value) if scope_name.respond_to? :call
 
                 scope_args = []
-                scope_args.push(value) if params.key? :with_value && params[:with_value] == true
+                scope_args.push(value) if params.key?(:with_value) && params[:with_value] == true
 
                 @result = @result.send(scope_name, *scope_args) unless scope_name.nil?
                 # Match custom methods
@@ -84,9 +84,9 @@ module GraphQL
                   value = resolve_id(value)
                 end
 
-                if self.respond_to? arg && params[:where].present? == false
+                if self.respond_to?(arg) && params[:where].present? == false
                   @result = send(arg, value)
-                elsif @result.respond_to? arg && params[:where].present? == false
+                elsif @result.respond_to?(arg) && params[:where].present? == false
                   @result = @result.send(arg, value)
                 elsif @result.respond_to? :where
                   attribute =
@@ -169,13 +169,13 @@ module GraphQL
 
       def get_arg_type(key)
         args = get_field_args
-        args && args[key].type
+        args && args[key] && args[key].type
       end
 
       def is_field_id_type?(field)
-        false unless field
-        field == ::GraphQL::ID_TYPE ||
-            (field.kind == ::GraphQL::TypeKinds::LIST && field.of_type == ::GraphQL::ID_TYPE)
+        field &&
+            (field == ::GraphQL::ID_TYPE ||
+                (field.kind == ::GraphQL::TypeKinds::LIST && field.of_type == ::GraphQL::ID_TYPE))
       end
 
       def is_arg_id_type?(key)
